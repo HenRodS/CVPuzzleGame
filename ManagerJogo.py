@@ -5,47 +5,60 @@ from DragModulo import DragImg
 def inicializar(modo):
     img_list = []
     path = "ImagesPNG"
+    pathTarget = "ImagesTarget"
     files = os.listdir(path)
 
     if modo == 1:
         # MODO TESTE
-        for x, nome in enumerate(files):
+        for nome in files:
             imgType = 'png' if 'png' in nome else 'jpg'
-            img_list.append(DragImg(f'{path}/{nome}', [100 + x * 200, 400], [100 + x * 200, 50], imgType, scale=0.5))
+        img_list.append(DragImg(f'{path}/{nome}', f'{pathTarget}/{nome}',[100 + x * 200, 400], [100 + x * 200, 50], imgType))
 
     elif modo == 2:
         # MODO JOGO
         escolhidos = random.sample(files, 2)
-        for x, nome in enumerate(escolhidos):
+        for nome in escolhidos:
             imgType = 'png' if 'png' in nome else 'jpg'
+            caminho = f'{path}/{nome}'
+            caminhoTarget = f'{pathTarget}/{nome}'
 
             # Criamos um objeto temporário para saber o tamanho da imagem (size)
-            temp_obj = DragImg(f'{path}/{nome}', [0, 0], [0, 0], imgType, scale=0.5)
-            h, w = temp_obj.size
+            img_obj = DragImg(caminho, caminhoTarget, [0, 0], [0, 0], imgType)
+            h, w = img_obj.size
 
             # --- VALIDAÇÃO DO ALVO (Target) ---
             tentativas = 0
             while tentativas < 50:  # Limite de tentativas para não travar o PC
                 pos_alvo = [random.randint(100, 1000), random.randint(50, 250)]
                 if not checar_overlap(pos_alvo, (w, h), img_list):
-                    temp_obj.posTarget = pos_alvo
+                    img_obj.posTarget = pos_alvo
                     break
                 tentativas += 1
+            else:
+                # Se não encontrou posição → usa uma fixa ou ignora
+                img_obj.posTarget = [300 + len(img_list) * 220, 150]
 
             # --- VALIDAÇÃO DA POSIÇÃO INICIAL (Origin) ---
             tentativas = 0
             while tentativas < 50:
                 pos_inicial = [random.randint(100, 1000), random.randint(400, 600)]
-                # Aqui você pode checar contra as posições iniciais já definidas
-                if not any(
-                        not (pos_inicial[0] + w < obj.posOrigin[0] or pos_inicial[0] > obj.posOrigin[0] + obj.size[1] or \
-                             pos_inicial[1] + h < obj.posOrigin[1] or pos_inicial[1] > obj.posOrigin[1] + obj.size[0])
-                        for obj in img_list):
-                    temp_obj.posOrigin = pos_inicial
+                overlap = False
+                for outro in img_list:
+                    ox, oy = outro.posOrigin
+                    ow, oh = outro.size
+                    if not (pos_inicial[0] + w < ox or pos_inicial[0] > ox + ow or
+                            pos_inicial[1] + h < oy or pos_inicial[1] > oy + oh):
+                        overlap = True
+                        break
+                if not overlap:
+                    img_obj.posOrigin = pos_inicial
                     break
                 tentativas += 1
+            else:
+                # fallback
+                img_obj.posOrigin = [200 + len(img_list) * 220, 500]
 
-            img_list.append(temp_obj)
+            img_list.append(img_obj)
 
     return img_list
 
