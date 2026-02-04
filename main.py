@@ -4,6 +4,7 @@ from cvzone.HandTrackingModule import HandDetector
 import Interface
 from ManagerJogo import inicializar
 from Render import renderizar_jogo
+from clickDetection import processar_hand_input
 
 # --- Configurações Iniciais ---
 cap = cv2.VideoCapture(0)
@@ -19,37 +20,19 @@ vitoria = False  # Controla se a tela de parabéns deve aparecer
 
 listImg = inicializar(MODO)
 selectedImg = None
+flagFase = True
 
 while True:
     success, img = cap.read()
     img = cv2.flip(img, 1)
-    hands, img = detector.findHands(img, flipType=False)
 
-    cursor = [0, 0]
-    clicou = False
-
-    if hands:
-        lmList = hands[0]['lmList']
-        cursor = lmList[8][0:2]
-        length, _, img = detector.findDistance(lmList[8][0:2], lmList[12][0:2], img)
-
-        if length < 60:
-            clicou = True
-
-            # Lógica de arraste (só funciona se NÃO estiver na tela de vitória)
-            if not vitoria:
-                if selectedImg is None:
-                    for imgObj in listImg:
-                        ox, oy = imgObj.posOrigin
-                        h, w = imgObj.size
-                        if ox < cursor[0] < ox + w and oy < cursor[1] < oy + h:
-                            if not imgObj.isMatched:
-                                selectedImg = imgObj
-                                break
-                if selectedImg:
-                    selectedImg.update(cursor)
-        else:
-            selectedImg = None
+    img, cursor, clicou, selectedImg = processar_hand_input(
+        detector=detector,
+        img=img,
+        listImg=listImg,
+        selectedImg=selectedImg,
+        vitoria=vitoria
+    )
 
     # MÁQUINA DE ESTADOS
     if estado == "menu":
@@ -57,7 +40,7 @@ while True:
         if estado == "sair": break
 
     elif estado == "fases":
-        estado = Interface.tela_selecao_fases(img, cursor, clicou)
+        estado, fase = Interface.tela_selecao_fases(img, cursor, clicou)
 
     elif estado == "opcoes":
         cvzone.putTextRect(img, "EM BREVE...", (500, 350))
@@ -65,6 +48,10 @@ while True:
             estado = "menu"
 
     elif estado == "jogando":
+        if flagFase:
+            listImg = inicializar(MODO, fase)
+            flagFase = False
+
         # --- Lógica de Jogo ---
         contador_encaixes = 0
         if not vitoria:
@@ -79,6 +66,8 @@ while True:
                 # Reset do jogo ao clicar em continuar
                 listImg = inicializar(MODO)
                 vitoria = False
+                flagFase = True
+                selectedImg = None
                 estado = "fases" # volta ao inicio
         pass
 

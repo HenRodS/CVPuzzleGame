@@ -1,22 +1,19 @@
 import random
 import os
 from DragModulo import DragImg
+from levels import levels
 
-def inicializar(modo):
+def inicializar(modo, fase=1):
     img_list = []
-    path = "ImagesPNG"
-    pathTarget = "ImagesTarget"
+    level_config = levels[fase]
+
+    path = level_config["pathObject"]
+    pathTarget = level_config["pathTarget"]
     files = os.listdir(path)
 
-    if modo == 1:
-        # MODO TESTE
-        for nome in files:
-            imgType = 'png' if 'png' in nome else 'jpg'
-        img_list.append(DragImg(f'{path}/{nome}', f'{pathTarget}/{nome}',[100 + x * 200, 400], [100 + x * 200, 50], imgType))
-
-    elif modo == 2:
-        # MODO JOGO
-        escolhidos = random.sample(files, 2)
+    if modo == 2:
+        # MODO JOGO (MODO TESTE NÃO IMPLEMENTADO)
+        escolhidos = random.sample(files, level_config["objetos"])
         for nome in escolhidos:
             imgType = 'png' if 'png' in nome else 'jpg'
             caminho = f'{path}/{nome}'
