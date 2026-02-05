@@ -36,7 +36,7 @@ def tela_selecao_fases(img, cursor, click):
     btn_fase2 = desenhar_botao(img, "FASE 2", (450, 250, 200, 60), cursor, click)
     btn_voltar = desenhar_botao(img, "VOLTAR", (500, 600, 200, 60), cursor, click)
 
-    if btn_fase1: return "jogando", 2
+    if btn_fase1: return "jogando", 1
     if btn_fase2: return "jogando", 2
     if btn_voltar: return "menu", None
     return "fases", None
