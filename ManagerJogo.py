@@ -2,13 +2,15 @@ import pygame
 import random
 import os
 from DragModulo import DragImg
-from levels import levels
 
 def inicializar(dificuldade=2):
     """Inicia a fase, carregando as imagens de acordo com a fase"""
     img_list = []
-    pasta_origem = "ImagesPNG"
-    pasta_alvo = "ImagesTarget"
+    
+    # Define a pasta base de assets de forma segura
+    base_path = "assets"
+    pasta_origem = os.path.join(base_path, "imagesPNG")
+    pasta_alvo = os.path.join(base_path, "imagesTarget")
     
     # Garantir que as pastas existam
     if not os.path.exists(pasta_origem):

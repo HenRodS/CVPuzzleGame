@@ -7,9 +7,8 @@ import cv2
 import cvzone
 from cvzone.HandTrackingModule import HandDetector
 import Interface
-from ManagerJogo import ManagerJogo
+from ManagerJogo import inicializar
 from Render import renderizar_jogo
-from clickDetection import processar_hand_input
 
 # --- COnfigurações Pygame ---
 largura, altura = 1280, 720
@@ -88,6 +87,7 @@ while rodando:
             listImg = inicializar(num_pecas)
             estado = "jogando"
 
+    elif estado == "jogando":
         # --- Lógica de Jogo ---
         contador_encaixes = 0
         if not vitoria:
