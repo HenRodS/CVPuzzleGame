@@ -1,90 +1,65 @@
+import pygame
 import random
 import os
 from DragModulo import DragImg
 from levels import levels
 
+def inicializar(dificuldade=2):
+    """Inicia a fase, carregando as imagens de acordo com a fase"""
+    img_list = []
+    pasta_origem = "ImagesPNG"
+    pasta_alvo = "ImagesTarget"
+    
+    # Garantir que as pastas existam
+    if not os.path.exists(pasta_origem):
+        print(f"Erro: Pasta {pasta_origem} não encontrada!")
+        return []
 
-def checar_overlap(new_pos, size, existing_list):
-    nx, ny = new_pos
-    nw, nh = size
-    for imgObj in existing_list:
-        ex, ey = imgObj.posTarget  # Ou posOrigin, dependendo do que quer validar
-        ew, eh = imgObj.size
+    files = [f for f in os.listdir(pasta_origem) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
-        # Lógica de intersecção de retângulos
-        if not (nx + nw < ex or nx > ex + ew or ny + nh < ey or ny > ey + eh):
-            return True  # Há sobreposição
-    return False
+    qtd_pecas = min(len(files), dificuldade)
+    escolhidos = random.sample (files, qtd_pecas)
 
-class ManagerJogo:
-    def __init__(self, modo=2):
-        self.modo = modo
-        self.estado = "menu"
-        self.vitoria = False  # Controla se a tela de parabéns deve aparecer
-        self.flagFase = True
-        self.fase_atual = 1
-        self.tempo_vitoria = None
-        self.selectedImg = None
-        self.listImg = []
-        self.delay_vitoria = 1
+    for nome in escolhidos:
+        caminho = os.path.join(pasta_origem, nome)
+        caminhoTarget = os.path.join(pasta_alvo, nome)
 
-    def iniciar_fase(self, fase):
-        self.fase_atual = fase
-        self.listImg = self.gerar_lista_imagens(fase)
-        self.flagFase = False
-        self.vitoria = False
-        self.tempo_vitoria = None
+        w, h = 200, 200
 
-    def gerar_lista_imagens(self, fase):
-        img_list = []
-        level_config = levels[fase]
+        # --- VALIDAÇÃO DO ALVO (Target) ---
+        pos_target = encontrar_posicao_livre(img_list, w, h, (100, 1000), (50, 250), "target")
 
-        path = level_config["pathObject"]
-        pathTarget = level_config["pathTarget"]
-        files = os.listdir(path)
+        # --- VALIDAÇÃO DA POSIÇÃO INICIAL (Origin) ---
+        pos_origin = encontrar_posicao_livre(img_list, w, h, (100, 1000), (400, 600), "origin")
 
-        if self.modo == 2:
-            # MODO JOGO (MODO TESTE NÃO IMPLEMENTADO)
-            escolhidos = random.sample(files, level_config["objetos"])
-            for nome in escolhidos:
-                imgType = 'png' if 'png' in nome else 'jpg'
-                caminho = f'{path}/{nome}'
-                caminhoTarget = f'{pathTarget}/{nome}'
+        # cria o objeto
+        img_obj = DragImg(caminho, caminhoTarget, pos_origin, pos_target)
+        img_list.append(img_obj)
 
-                # Criamos um objeto temporário para saber o tamanho da imagem (size)
-                img_obj = DragImg(caminho, caminhoTarget, [0, 0], [0, 0], imgType)
-                h, w = img_obj.size
+    return img_list
 
-                # --- VALIDAÇÃO DO ALVO (Target) ---
-                tentativas = 0
-                while tentativas < 50:  # Limite de tentativas para não travar o PC
-                    pos_alvo = [random.randint(100, 1000), random.randint(50, 250)]
-                    if not checar_overlap(pos_alvo, (w, h), img_list):
-                        img_obj.posTarget = pos_alvo
-                        break
-                    tentativas += 1
-                else:
-                    # Se não encontrou posição → usa uma fixa ou ignora
-                    img_obj.posTarget = [300 + len(img_list) * 220, 150]
 
-                # --- VALIDAÇÃO DA POSIÇÃO INICIAL (Origin) ---
-                tentativas = 0
-                while tentativas < 50:
-                    pos_inicial = [random.randint(100, 1000), random.randint(400, 600)]
-                    if not checar_overlap(pos_inicial, (w, h), img_list):
-                        img_obj.posOrigin = pos_inicial
-                        break
-                    tentativas += 1
-                else:
-                    # fallback
-                    img_obj.posOrigin = [200 + len(img_list) * 220, 500]
-
-                img_list.append(img_obj)
-        return img_list
-
-    def reset_geral(self):
-        self.vitoria = False
-        self.flagFase = True
-        self.selectedImg = None
-        self.estado = "fases"  # volta ao inicio
-        self.tempo_vitoria = None
+def encontrar_posicao_livre(lista_existente, w, h, range_x, range_y, tipo):
+    """Função auxiliar para evitar repetição de código de overlap"""
+    tentativas = 0
+    while tentativas < 50:
+        pos = [random.randint(range_x[0], range_x[1]), random.randint(range_y[0], range_y[1])]
+        
+        overlap = False
+        for outro in lista_existente:
+            # Pega a posição correta dependendo se estamos checando Target ou Origin
+            ox, oy = outro.posTarget if tipo == "target" else outro.posOrigin
+            ow, oh = outro.size
+            
+            # Lógica de colisão de retângulos (AABB)
+            if not (pos[0] + w < ox or pos[0] > ox + ow or
+                    pos[1] + h < oy or pos[1] > oy + oh):
+                overlap = True
+                break
+        
+        if not overlap:
+            return pos
+        tentativas += 1
+    
+    # Fallback caso não ache lugar
+    return [200 + len(lista_existente) * 220, 150 if tipo == "target" else 500]
