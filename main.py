@@ -4,11 +4,10 @@ pygame.init()
 
 import numpy
 import cv2
-import cvzone
-from cvzone.HandTrackingModule import HandDetector
 import Interface
-from ManagerJogo import inicializar
+from game_manager import generate_basic_level
 from Render import renderizar_jogo
+from hand_controller import hand_processor
 
 # --- COnfigurações Pygame ---
 largura, altura = 1280, 720
@@ -20,15 +19,14 @@ clock = pygame.time.Clock()
 cap = cv2.VideoCapture(0)
 cap.set(3, largura)
 cap.set(4, altura)
-detector = HandDetector(detectionCon=0.65)
 
 # --- Variaveis de estado ---
 estado = "menu"
 MODO = 2
 vitoria = False
 rodando = True
-listImg = inicializar()
-selectedImg = None
+listPiece = generate_basic_level()
+selectedPiece = None
 
 while rodando:
     # Eventos Pygame
@@ -42,30 +40,12 @@ while rodando:
     img = cv2.flip(img, 1)
 
     # Processando mãos
-    hands, img = detector.findHands(img, flipType=False) # draw=False para desabilitar o desenho da mão
-
-    cursor = [0, 0]
-    clicou = False
-
-    if hands:
-        lmList = hands[0]['lmList']
-        cursor = lmList[8][0:2]
-        length, _, img = detector.findDistance(lmList[8][0:2], lmList[12][0:2], img)
-        if length < 60:
-            clicou = True
-
-            # Lógica de arraste (só funciona se NÃO estiver na tela de vitória)
-            if not vitoria:
-                if selectedImg is None:
-                    for imgObj in listImg:
-                        if imgObj.rect.collidepoint(cursor):
-                            if not imgObj.isMatched:
-                                selectedImg = imgObj
-                                break
-                if selectedImg:
-                    selectedImg.update(cursor)
-        else:
-            selectedImg = None
+    cursor, clicou, selectedPiece, img = hand_processor(
+        img,
+        vitoria,
+        listPiece,
+        selectedPiece
+    )
 
     # Conversão OpenCV (BGR) -> Pygame (RGB)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -80,26 +60,25 @@ while rodando:
         if estado == "sair": break
 
     elif estado == "fases":
-        print("ping 1")
         estado, num_pecas = Interface.tela_fases_pygame(tela, largura, cursor, clicou)
 
         if num_pecas is not None:
-            listImg = inicializar(num_pecas)
+            listPiece = generate_basic_level(num_pecas)
             estado = "jogando"
 
     elif estado == "jogando":
         # --- Lógica de Jogo ---
         contador_encaixes = 0
         if not vitoria:
-            contador_encaixes = renderizar_jogo(tela, listImg)
+            contador_encaixes = renderizar_jogo(tela, listPiece)
 
-            if contador_encaixes == len(listImg) and len(listImg) > 0:
+            if contador_encaixes == len(listPiece) and len(listPiece) > 0:
                 vitoria = True
 
         # --- Lógica de Vitória ---
         if vitoria:
             if Interface.tela_vitoria_pygame(tela, largura, cursor, clicou):
-                listImg = inicializar()
+                listPiece = generate_basic_level()
                 vitoria = False
                 estado = "fases"
 

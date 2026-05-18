@@ -1,7 +1,7 @@
 import cv2
 from cvzone.HandTrackingModule import HandDetector
 
-def processar_hand_input(detector: HandDetector, img, listImg: list, selectedImg, vitoria:bool):
+def processar_hand_input(detector: HandDetector, img, listPiece: list, selectedPiece, vitoria:bool):
     """
         Processa a imagem da câmera, detecta mãos, calcula cursor e clique,
         e faz a lógica de arraste dos objetos.
@@ -9,12 +9,12 @@ def processar_hand_input(detector: HandDetector, img, listImg: list, selectedImg
         Parâmetros:
             detector: Instância do HandDetector
             img: Frame atual da câmera (será modificado)
-            listImg: Lista de objetos DragImg
-            selectedImg: Objeto atualmente selecionado (ou None)
+            listPiece: Lista de objetos PuzzlePiece
+            selectedPiece: Objeto atualmente selecionado (ou None)
             vitoria: Se True, desativa a lógica de arraste
 
         Retorna:
-            tuple: (img atualizada, cursor [x,y], clicou: bool, selectedImg atualizado)
+            tuple: (img atualizada, cursor [x,y], clicou: bool, selectedPiece atualizado)
         """
     hands, img = detector.findHands(img, flipType=False)
 
@@ -31,17 +31,17 @@ def processar_hand_input(detector: HandDetector, img, listImg: list, selectedImg
 
             # Lógica de arraste (só funciona se NÃO estiver na tela de vitória)
             if not vitoria:
-                if selectedImg is None:
-                    for imgObj in listImg:
-                        ox, oy = imgObj.posOrigin
-                        h, w = imgObj.size
+                if selectedPiece is None:
+                    for piece in listPiece:
+                        ox, oy = piece.posOrigin
+                        h, w = piece.size
                         if (ox < cursor[0] < ox + w) and (oy < cursor[1] < oy + h):
-                            if not imgObj.isMatched:
-                                selectedImg = imgObj
+                            if not piece.isMatched:
+                                selectedPiece = piece
                                 break
-                if selectedImg:
-                    selectedImg.update(cursor)
+                if selectedPiece:
+                    selectedPiece.update(cursor)
         else:
-            selectedImg = None
+            selectedPiece = None
 
-    return img, cursor, clicou, selectedImg
+    return img, cursor, clicou, selectedPiece

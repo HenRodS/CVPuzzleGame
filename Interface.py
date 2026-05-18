@@ -1,5 +1,3 @@
-import cv2
-import cvzone
 import pygame
 
 class Botao:
@@ -66,7 +64,8 @@ def tela_vitoria_pygame(tela, largura_tela, cursor, click):
 
 # Instancia os botoes de fase (melhorar isso)
 btn_fase1 = Botao("FASE 1", (200, 250), (200, 60))
-btn_fase2 = Botao("FASE 2", (450, 250), (200, 60)) # Exemplo de mais uma fase
+btn_fase2 = Botao("FASE 2", (450, 250), (200, 60))
+btn_fase3 = Botao("FASE 3", (700, 250), (200, 60))
 btn_voltar = Botao("VOLTAR", (540, 600), (200, 60), cor_base=(100, 100, 100))
 
 def tela_fases_pygame(tela, largura_tela, cursor, click):
@@ -84,10 +83,12 @@ def tela_fases_pygame(tela, largura_tela, cursor, click):
         return "jogando", 2 # indica o numero de peças
     
     if btn_fase2.desenhar(tela, cursor) and click:
-        return "jogando", 4 
+        return "jogando", 4
     
+    if btn_fase3.desenhar(tela, cursor) and click:
+        return "jogando", 6
+
     if btn_voltar.desenhar(tela, cursor) and click:
         return "menu", None
     
-    print("ping 2")
     return "fases", None

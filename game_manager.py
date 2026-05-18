@@ -1,11 +1,10 @@
-import pygame
 import random
 import os
-from DragModulo import DragImg
+from game_objects import PuzzlePiece
 
-def inicializar(dificuldade=2):
+def generate_basic_level(dificuldade=2):
     """Inicia a fase, carregando as imagens de acordo com a fase"""
-    img_list = []
+    PuzzlePiece_list = []
     
     # Define a pasta base de assets de forma segura
     base_path = "assets"
@@ -29,16 +28,15 @@ def inicializar(dificuldade=2):
         w, h = 200, 200
 
         # --- VALIDAÇÃO DO ALVO (Target) ---
-        pos_target = encontrar_posicao_livre(img_list, w, h, (100, 1000), (50, 250), "target")
+        pos_target = encontrar_posicao_livre(PuzzlePiece_list, w, h, (100, 1000), (50, 250), "target")
 
         # --- VALIDAÇÃO DA POSIÇÃO INICIAL (Origin) ---
-        pos_origin = encontrar_posicao_livre(img_list, w, h, (100, 1000), (400, 600), "origin")
+        pos_origin = encontrar_posicao_livre(PuzzlePiece_list, w, h, (100, 1000), (400, 600), "origin")
 
         # cria o objeto
-        img_obj = DragImg(caminho, caminhoTarget, pos_origin, pos_target)
-        img_list.append(img_obj)
-
-    return img_list
+        piece_object = PuzzlePiece(caminho, caminhoTarget, pos_origin, pos_target)
+        PuzzlePiece_list.append(piece_object)
+    return PuzzlePiece_list
 
 
 def encontrar_posicao_livre(lista_existente, w, h, range_x, range_y, tipo):
