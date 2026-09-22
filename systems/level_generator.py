@@ -1,6 +1,6 @@
 import random
 import os
-from game_objects import PuzzlePiece
+from objects.puzzle_piece import PuzzlePiece
 
 def generate_basic_level(dificuldade=2):
     """Inicia a fase, carregando as imagens de acordo com a fase"""

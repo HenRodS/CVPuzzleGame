@@ -4,12 +4,15 @@ pygame.init()
 
 import numpy
 import cv2
-import Interface
-from game_manager import generate_basic_level
-from Render import renderizar_jogo
-from hand_controller import hand_processor
+from ui import level_select, main_menu, victory_screen
+from systems.level_generator import generate_basic_level
+from systems.game_manager import check_victory
+from systems.render import draw_game
+from systems.hand_controller import hand_processor
+from levels.level_1 import Level1
+from levels.level_2 import Level2
 
-# --- COnfigurações Pygame ---
+# --- COnfigurações gerais ---
 largura, altura = 1280, 720
 tela = pygame.display.set_mode((largura, altura))
 pygame.display.set_caption("CV Puzzle Game - Pygame Edition")
@@ -22,7 +25,6 @@ cap.set(4, altura)
 
 # --- Variaveis de estado ---
 estado = "menu"
-MODO = 2
 vitoria = False
 rodando = True
 listPiece = generate_basic_level()
@@ -56,31 +58,38 @@ while rodando:
 
     # Máquina de Estados
     if estado == "menu":
-        estado = Interface.tela_menu_pygame(tela, largura, cursor, clicou)
-        if estado == "sair": break
+        # chama a tela principal e atualiza o estado conforme a escolha
+        estado = main_menu.tela_menu_pygame(tela, largura, cursor, clicou)
+        if estado == "sair":
+            break
 
     elif estado == "fases":
-        estado, num_pecas = Interface.tela_fases_pygame(tela, largura, cursor, clicou)
+        estado, fase_num = level_select.tela_fases_pygame(tela, largura, cursor, clicou)
+        # --- Escolha das Fases ---
+        if fase_num == 1:
+            listPiece = Level1().load()
+            estado = "jogando"
 
-        if num_pecas is not None:
-            listPiece = generate_basic_level(num_pecas)
+        if fase_num == 2:
+            listPiece = Level2().load()
             estado = "jogando"
 
     elif estado == "jogando":
         # --- Lógica de Jogo ---
         contador_encaixes = 0
         if not vitoria:
-            contador_encaixes = renderizar_jogo(tela, listPiece)
+            draw_game(tela, listPiece)
 
-            if contador_encaixes == len(listPiece) and len(listPiece) > 0:
+            if check_victory(listPiece):
                 vitoria = True
 
         # --- Lógica de Vitória ---
         if vitoria:
-            if Interface.tela_vitoria_pygame(tela, largura, cursor, clicou):
+            if victory_screen.tela_vitoria_pygame(tela, largura, cursor, clicou):
                 listPiece = generate_basic_level()
                 vitoria = False
                 estado = "fases"
+                
 
     pygame.display.update()
     clock.tick(60) # Limita a 60 FPS

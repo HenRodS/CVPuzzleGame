@@ -1,372 +1,181 @@
-# CV Puzzle Game - Documentação
+# CV Puzzle Game
+
+## Visão Geral
+
+O **CV Puzzle Game** é um jogo de quebra-cabeça baseado em webcam que combina detecção de mãos com renderização 2D. O jogador arrasta peças virtuais para encaixá-las em alvos, usando gestos de mão como cursor e clique.
+
+O projeto utiliza **OpenCV** para captura de vídeo, **CVZone / MediaPipe** para detecção de mãos e **Pygame** para a interface e desenho do jogo.
+
+---
 
 ## 1. Funcionamento
 
-### 1.1 Visão Geral do Jogo
+### 1.1 Fluxo do Jogo
 
-O **CV Puzzle Game** é um jogo de quebra-cabeça interativo que utiliza **visão computacional** para detectar movimentos de mão e permitir que o jogador arraste peças de puzzle usando gestos. O jogo combina **OpenCV**, **Pygame** e **MediaPipe** para criar uma experiência imersiva onde o jogador interage com o jogo por meio de webcam.
+1. O jogo inicia em `main.py` com a janela do Pygame e a captura de webcam.
+2. A cada frame, a imagem da câmera é lida e espelhada.
+3. `systems/hand_controller.py` processa o frame para detectar a mão e determinar o cursor e o estado de clique.
+4. O frame da câmera é convertido para Pygame e usado como fundo do jogo.
+5. A máquina de estados controla as telas:
+   - `menu`
+   - `fases`
+   - `jogando`
+   - `vitória`
+6. Quando o jogador escolhe uma fase, o nível correspondente é carregado:
+   - `levels/level_1.py` → 2 peças
+   - `levels/level_2.py` → 4 peças
+7. O jogo exibe as peças e seus alvos.
+8. O jogador move a peça selecionada pelo cursor e, ao aproximar o dedo indicador do médio, ativa o clique.
+9. Se a peça chega próxima ao alvo, ela se encaixa automaticamente e fica fixa.
+10. Quando todas as peças estão encaixadas, a tela de vitória é exibida.
 
-### 1.2 Fluxo de Gameplay
+### 1.2 Entrada por movimento de mão
 
-#### **Menu Principal**
-- O jogador inicia na tela de menu com duas opções: "FASES" e "SAIR"
-- O cursor do mouse é controlado pela posição da mão detectada pela câmera
-- Clique é simulado pelo gesto de aproximar o polegar e o dedo indicador (distância < 60 pixels)
+- O cursor é calculado a partir do landmark do dedo indicador.
+- O clique é detectado pela distância entre o dedo indicador e o dedo médio.
+- Distância menor que 60 pixels ativa o clique.
+- O controle é feito por `cvzone.HandTrackingModule.HandDetector`.
 
-#### **Seleção de Fase**
-- O jogador escolhe uma fase (Fase 1: 2 peças, Fase 2: 4 peças)
-- Cada fase carrega um número diferente de imagens de puzzle
-- As peças são selecionadas aleatoriamente da pasta de assets
+### 1.3 Renderização
 
-#### **Jogo Ativo (Jogando)**
-1. **Renderização Inicial**:
-   - Peças de puzzle aparecem em posições aleatórias no lado esquerdo/centro da tela
-   - Alvos (targets) aparecem em posições fixas no lado direito da tela
-   - Cada peça tem uma cor aleatória e um alvo correspondente
-
-2. **Interação com Peças**:
-   - O jogador detecta peças com a mão
-   - Ao fazer o gesto de clique (polegar e indicador próximos), a peça é selecionada
-   - A peça segue o cursor (posição da mão) enquanto o clique está ativo
-   - Quando o jogador solta (aumenta a distância entre polegar e indicador), a peça é liberada
-
-3. **Sistema de Encaixe (Snap)**:
-   - Quando uma peça se aproxima do alvo (distância < 50 pixels em X e Y)
-   - A peça "encaixa" automaticamente no alvo
-   - A borda da peça muda de uma cor aleatória para verde, indicando sucesso
-   - A peça encaixada não pode mais ser movida
-
-4. **Vitória**:
-   - Quando todas as peças são encaixadas nos seus alvos, a tela de vitória é exibida
-   - Exibe a mensagem: "PARABÉNS, VOCÊ VENCEU!"
-   - O jogador clica no botão "CONTINUAR" para retornar ao menu de fases
-
-### 1.3 Detecção de Mão e Cursor
-
-- **HandDetector (MediaPipe)**: Detecta landmarks (pontos-chave) da mão
-- **Cursor**: Posição do dedo indicador (landmark 8)
-- **Clique**: Calculado pela distância entre o dedo indicador (landmark 8) e dedo médio (landmark 12)
-  - Se distância < 60 pixels: clique ativo
-  - Se distância >= 60 pixels: clique inativo
-
-### 1.4 Renderização Visual
-
-- **Camada 1**: Alvos (targets) são desenhados ao fundo
-- **Camada 2**: Peças (imagens arrastáveis) são desenhadas à frente
-- Bordes em torno de cada elemento indicam seu estado:
-  - Verde (para peças encaixadas)
-  - Cor aleatória (para peças soltas)
-  - Branca (para alvos)
+- A câmera é usada como plano de fundo.
+- As imagens de alvo (`spriteTarget`) são desenhadas primeiro.
+- As peças (`sprite`) são desenhadas acima dos alvos.
+- A tela de vitória é exibida por cima do jogo quando o usuário completa o nível.
 
 ---
 
 ## 2. Tecnologias Utilizadas
 
-### 2.1 Bibliotecas Principais
+### 2.1 Dependências principais
 
-| Tecnologia | Versão | Propósito |
-|---|---|---|
-| **OpenCV** | 4.13.0.92 | Captura e processamento de frames de vídeo da webcam |
-| **Pygame** | (não especificado) | Renderização gráfica, interface do jogo e eventos |
-| **MediaPipe** | 0.10.13 | Detecção de mãos e landmarks (pontos-chave) |
-| **CVZone** | 1.6.1 | Wrapper simplificado para MediaPipe |
-| **NumPy** | 2.4.2 | Operações com arrays e processamento de imagens |
+- `pygame` — renderização 2D, interface e eventos
+- `opencv-python` — captura de vídeo da webcam e manipulação de frames
+- `opencv-contrib-python` — usado pelo `cvzone` para detecção de mão
+- `cvzone` — wrapper para `MediaPipe` com detecção de mão mais simples
+- `mediapipe` — detecção de mãos e landmarks
+- `numpy` — conversão entre arrays OpenCV e superfícies Pygame
 
-### 2.2 Dependências Adicionais
+### 2.2 Dependências do ambiente
 
-| Biblioteca | Versão | Propósito |
-|---|---|---|
-| **Pillow** | 12.1.1 | Processamento e manipulação de imagens |
-| **SciPy** | 1.17.1 | Computações científicas e cálculos matemáticos |
-| **Matplotlib** | 3.10.8 | Visualização de dados (se necessário) |
-| **JAX** | 0.9.1 | Computação numérica acelerada |
-| **SoundDevice** | 0.5.5 | Processamento de áudio (para sons futuros) |
+O arquivo `requirements.txt` também inclui outras bibliotecas instaladas no ambiente, como:
 
-### 2.3 Stack Tecnológico
+- `Pillow`
+- `SciPy`
+- `Matplotlib`
+- `JAX`
+- `sounddevice`
 
-```
-┌─────────────────────────────────────────┐
-│         APLICAÇÃO PRINCIPAL             │
-│         (main.py - Pygame Loop)         │
-└─────────────────────────────────────────┘
-           ↓                    ↓
-    ┌────────────────┐   ┌──────────────┐
-    │  OpenCV Cap    │   │   Interface  │
-    │ (webcam feed)  │   │  (Botões UI) │
-    └────────────────┘   └──────────────┘
-           ↓
-    ┌────────────────┐
-    │  CVZone Handler│
-    │ (Hand Detection│
-    │   + Landmarks) │
-    └────────────────┘
-           ↓
-    ┌────────────────────────┐
-    │  Lógica de Jogo        │
-    │ (DragModulo, Render)   │
-    └────────────────────────┘
-```
+> Observação: `pygame` não está pinado em `requirements.txt` atualmente, mas é exigido pelo código.
 
 ---
 
 ## 3. Arquitetura
 
-### 3.1 Estrutura de Diretórios
+### 3.1 Estrutura atual do projeto
 
 ```
 CVPuzzleGame/
-├── main.py                    # Ponto de entrada, loop principal do Pygame
-├── ManagerJogo.py             # Gerenciador de fases, inicialização de objetos
-├── Interface.py               # Telas da UI (menu, fases, vitória)
-├── Render.py                  # Renderização visual do jogo
-├── DragModulo.py              # Classe DragImg (peças de puzzle)
-├── clickDetection.py          # Processamento de entrada de mão
-├── levels.py                  # Configuração de níveis (não utilizado atualmente)
-├── requirements.txt           # Dependências do projeto
+├── README.md
+├── main.py
+├── requirements.txt
 ├── assets/
-│   ├── imagesPNG/             # Imagens de peças do puzzle
-│   └── imagesTarget/          # Imagens alvo (targets) para encaixe
-└── venv/                      # Ambiente virtual Python
+│   ├── imagesPNG/
+│   └── imagesTarget/
+├── levels/
+│   ├── level_1.py
+│   └── level_2.py
+├── objects/
+│   └── puzzle_piece.py
+├── systems/
+│   ├── clickDetection.py
+│   ├── game_manager.py
+│   ├── hand_controller.py
+│   ├── level_generator.py
+│   └── render.py
+├── ui/
+│   ├── button.py
+│   ├── level_select.py
+│   ├── main_menu.py
+│   └── victory_screen.py
+└── venv/
 ```
 
-### 3.2 Diagrama de Classes
+### 3.2 Descrição dos principais módulos
 
-#### **Classe: Botao** (Interface.py)
-```python
-class Botao:
-    - texto: str
-    - rect: pygame.Rect
-    - cor_base: tuple RGB
-    - cor_hover: tuple RGB
-    - fonte: pygame.font
-    
-    + desenhar(tela, cursor) → bool
-```
+#### `main.py`
+- Ponto de entrada do jogo.
+- Cria a janela Pygame e o loop principal.
+- Gerencia estados do jogo e transições de tela.
+- Coordena captura de webcam, processamento de mão e desenho.
 
-**Responsabilidade**: Renderizar botões interativos na interface com efeito hover.
+#### `systems/hand_controller.py`
+- Detecta mãos e calcula cursor e clique.
+- Controla seleção e arraste das peças.
+- Retorna o cursor, o estado de clique, a peça selecionada e a imagem processada.
 
-#### **Classe: DragImg** (DragModulo.py)
-```python
-class DragImg:
-    - path: str                    # Caminho da imagem
-    - pathTarget: str              # Caminho da imagem alvo
-    - img: pygame.Surface          # Imagem carregada
-    - imgTarget: pygame.Surface    # Imagem alvo carregada
-    - rect: pygame.Rect            # Retângulo para colisão e posição
-    - posOrigin: list [x, y]       # Posição inicial da peça
-    - posTarget: list [x, y]       # Posição alvo para encaixe
-    - isMatched: bool              # Estado de encaixe
-    - size: tuple (w, h)           # Dimensões da peça
-    - color: tuple RGB             # Cor aleatória da borda
-    
-    + __init__(path, pathTarget, posOrigin, posTarget, width=200, height=200)
-    + update(cursor)               # Atualiza posição e verifica encaixe
-```
+#### `systems/level_generator.py`
+- Gera a configuração básica do nível a partir de imagens em `assets/`.
+- Seleciona imagens aleatórias para as peças e alvos.
+- Evita sobreposição de posições usando colisão AABB.
 
-**Responsabilidade**: Gerenciar uma peça de puzzle individual, incluindo sua posição, renderização e detecção de encaixe.
+#### `systems/game_manager.py`
+- Verifica se todas as peças já foram encaixadas.
+- Retorna verdadeiro quando o jogador vence.
 
-### 3.3 Fluxo de Dados
+#### `systems/render.py`
+- Desenha os alvos e as peças na tela.
+- Mantém o desenho simples e sequencial para respeitar as camadas.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    LOOP PRINCIPAL (main.py)                     │
-└─────────────────────────────────────────────────────────────────┘
-                            ↓
-        ┌───────────────────────────────────────┐
-        │  1. Captura frame da webcam (OpenCV)  │
-        └───────────────────────────────────────┘
-                            ↓
-        ┌───────────────────────────────────────┐
-        │  2. Detect mãos e landmarks (CVZone)  │
-        └───────────────────────────────────────┘
-                            ↓
-        ┌───────────────────────────────────────┐
-        │  3. Calcula cursor e clique           │
-        └───────────────────────────────────────┘
-                            ↓
-        ┌───────────────────────────────────────┐
-        │  4. Máquina de Estados                │
-        │     - Menu                            │
-        │     - Seleção de Fases                │
-        │     - Jogando                         │
-        │     - Vitória                         │
-        └───────────────────────────────────────┘
-                            ↓
-        ┌───────────────────────────────────────┐
-        │  5. Renderiza tela (Pygame)           │
-        │     - Fundo (frame da camera)         │
-        │     - Elementos UI                    │
-        │     - Peças e Alvos                   │
-        └───────────────────────────────────────┘
-                            ↓
-        ┌───────────────────────────────────────┐
-        │  6. Atualiza display (60 FPS)         │
-        └───────────────────────────────────────┘
-```
+#### `objects/puzzle_piece.py`
+- Define a classe `PuzzlePiece`.
+- Carrega e redimensiona sprites de peça e alvo.
+- Gerencia posição, colisão e lógica de snap.
 
-### 3.4 Descrição de Módulos
+#### `ui/button.py`
+- Classe reutilizável para botões com comportamento hover.
+- Renderiza o botão e detecta quando o cursor está sobre ele.
 
-#### **main.py** - Ponto de Entrada
-- Inicializa Pygame e OpenCV
-- Captura frames da webcam
-- Detecta mãos com CVZone (HandDetector)
-- Implementa a máquina de estados principal
-- Coordena renderização e lógica do jogo
-- Loop principal roda a 60 FPS
+#### `ui/main_menu.py`
+- Tela principal com os botões de `FASES` e `SAIR`.
+- Retorna o próximo estado do jogo.
 
-#### **ManagerJogo.py** - Gerenciador de Fases
-- **Função `inicializar(dificuldade=2)`**:
-  - Carrega imagens de `assets/imagesPNG/`
-  - Seleciona aleatoriamente N imagens (baseado na dificuldade)
-  - Cria objetos `DragImg` com posições aleatórias
-  - Retorna lista de objetos do jogo
+#### `ui/level_select.py`
+- Tela de seleção de fases com três botões.
+- Atualmente oferece `FASE 1`, `FASE 2` e `FASE 3`.
+- Somente `FASE 1` e `FASE 2` estão implementadas em `main.py`.
 
-- **Função `encontrar_posicao_livre()`**:
-  - Gera posições aleatórias sem sobreposição
-  - Usa colisão AABB (Axis-Aligned Bounding Box)
-  - Tenta até 50 vezes encontrar posição válida
-  - Fallback: posiciona em locais pré-definidos
+#### `ui/victory_screen.py`
+- Exibe mensagem de vitória com transparência.
+- Oferece botão `CONTINUAR` para retornar ao menu de fases.
 
-#### **Interface.py** - UI e Telas
-- **Classe `Botao`**: Define botões interativos com hover effect
-- **`tela_menu_pygame()`**: Renderiza menu principal
-- **`tela_fases_pygame()`**: Renderiza seleção de fases
-- **`tela_vitoria_pygame()`**: Renderiza tela de vitória com sobreposição
+#### `levels/level_1.py` e `levels/level_2.py`
+- Classes pequenas que carregam níveis predefinidos.
+- Chamam `generate_basic_level()` com diferentes quantidades de peças.
 
-#### **Render.py** - Renderização Visual
-- **Função `renderizar_jogo()`**:
-  - Desenha alvos (targets) em camada inferior
-  - Desenha peças (imagens) em camada superior
-  - Conta peças encaixadas
-  - Retorna contador de encaixes
-
-#### **DragModulo.py** - Lógica de Peças
-- **Classe `DragImg`**: Gerencia peças individuais
-  - Carrega e redimensiona imagens
-  - Detecta cliques/colisão de cursor
-  - Atualiza posição enquanto selecionada
-  - Implementa snap/encaixe automático
-
-#### **clickDetection.py** - Processamento de Entrada (Não Utilizado Atualmente)
-- **Função `processar_hand_input()`**: 
-  - Encapsula lógica de detecção de mão
-  - Pode ser integrada para modularizar código
-  - Retorna imagem, cursor, clique e objeto selecionado
-
-#### **levels.py** - Configuração de Níveis (Não Utilizado Atualmente)
-- Dicionário com configurações de fases
-- Pode ser expandido para suportar múltiplos níveis com diferentes propriedades
-
-### 3.5 Padrões e Conceitos
-
-#### **Máquina de Estados**
-```python
-Estado: "menu"
-    ↓ [Clica em FASES]
-Estado: "fases"
-    ↓ [Seleciona fase]
-Estado: "jogando"
-    ↓ [Todas peças encaixadas]
-Estado: "vitória"
-    ↓ [Clica em CONTINUAR]
-Estado: "fases"
-```
-
-#### **Sistema de Camadas de Renderização**
-1. **Camada 0**: Frame da webcam (fundo)
-2. **Camada 1**: Alvos (targets)
-3. **Camada 2**: Peças (imagens arrastáveis)
-4. **Camada 3**: UI (botões, texto)
-
-#### **Colisão e Snap**
-- **Detecção de seleção**: Retângulo colidepoint (AABB)
-- **Snap (Encaixe)**: Quando distância euclidiana < 50 pixels
-- **Previne re-movimento**: Flag `isMatched` desativa update
-
-### 3.6 Fluxo de Interação Usuário
-
-```
-Usuario com mão na frente da câmera
-        ↓
-    HandDetector detecta landmarks
-        ↓
-    Calcula cursor = posição dedo indicador (landmark 8)
-        ↓
-    Calcula distância entre indicador e médio (landmark 8 e 12)
-        ↓
-    Se distância < 60:
-        ├─→ clicou = True
-        ├─→ Se cursor colide com peça não-encaixada
-        │   └─→ selectedImg = peça
-        └─→ Atualiza posição de selectedImg para cursor
-    Senão:
-        └─→ clicou = False
-        └─→ selectedImg = None
-        ↓
-    DragImg.update() verifica snap
-        ├─→ Se distância < 50 pixels do alvo
-        │   ├─→ Encaixa peça (isMatched = True)
-        │   └─→ Muda cor da borda para verde
-        └─→ Retorna posição atualizada
-        ↓
-    Renderiza_jogo() desenha peça em nova posição
-```
-
-### 3.7 Dependências Entre Módulos
-
-```
-main.py
-├── Importa: pygame, numpy, cv2, cvzone, Interface, ManagerJogo, Render
-├── Usa: HandDetector (cvzone), VideoCapture (cv2)
-│
-├─→ Interface.py
-│   └── Importa: pygame, cv2, cvzone
-│       Expõe: Botao, tela_menu_pygame, tela_fases_pygame, tela_vitoria_pygame
-│
-├─→ ManagerJogo.py
-│   ├── Importa: pygame, random, os, DragModulo
-│   ├── Usa: DragImg
-│   └── Expõe: inicializar(), encontrar_posicao_livre()
-│
-├─→ Render.py
-│   ├── Importa: pygame
-│   └── Expõe: renderizar_jogo()
-│
-└─→ DragModulo.py
-    ├── Importa: pygame, random
-    └── Expõe: DragImg (classe)
-```
-
-### 3.8 Fluxo de Assets
-
-```
-Carregar Assets:
-├── imagesPNG/
-│   ├── imagem1.png → carregada como img
-│   ├── imagem2.png → carregada como img
-│   └── ...
-│
-└── imagesTarget/
-    ├── imagem1.png → carregada como imgTarget
-    ├── imagem2.png → carregada como imgTarget
-    └── ...
-
-Processamento:
-├── Redimensionamento: 200x200 (peça) e 210x210 (alvo)
-├── Conversão: pygame.image.load() → pygame.Surface
-└── Armazenamento: DragImg.img e DragImg.imgTarget
-```
+#### `systems/clickDetection.py`
+- Módulo alternativo para processar entrada de mão.
+- Hoje não é usado diretamente pelo loop principal, mas mantém lógica de detecção como referência.
 
 ---
 
-## Resumo da Arquitetura
+## 4. Fluxo de execução
 
-O projeto segue uma **arquitetura modular com separação de responsabilidades**:
+1. `main.py` inicia o jogo e define o estado `menu`.
+2. A câmera é aberta via OpenCV.
+3. O loop principal processa eventos Pygame e frames da câmera.
+4. `systems/hand_controller.py` detecta o cursor e o clique.
+5. A imagem da câmera é convertida e desenhada como fundo.
+6. A interface renderiza o menu, seleção de fase, jogo ou vitória.
+7. O estado muda conforme as ações do jogador.
+8. Se houver vitória, o jogo exibe a tela de vitória e espera a ação do usuário.
 
-- **Captura e Processamento**: OpenCV + CVZone (entrada)
-- **Renderização**: Pygame (saída visual)
-- **Lógica de Jogo**: ManagerJogo + DragModulo + Render (processamento)
-- **Interface**: Interface.py (UI e navegação)
-- **Loop Principal**: main.py (orquestração)
+---
 
-Essa estrutura permite fácil expansão, manutenção e adição de novas funcionalidades sem impactar o resto da aplicação.
+## 5. Observações sobre a organização atual
+
+- O código está organizado em pacotes para separar UI, lógica de jogo, objetos e sistemas.
+- Há módulos de suporte (`systems/clickDetection.py`) que não estão conectados ao fluxo principal.
+- A seleção de fase no `ui/level_select.py` sugere três fases, mas apenas duas fases são carregadas em `main.py`.
+- O diretório `assets/` armazena as imagens das peças e alvos.
+- O diretório `venv/` contém o ambiente virtual e não faz parte do código-fonte principal.

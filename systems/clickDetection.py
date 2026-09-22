@@ -1,4 +1,3 @@
-import cv2
 from cvzone.HandTrackingModule import HandDetector
 
 def processar_hand_input(detector: HandDetector, img, listPiece: list, selectedPiece, vitoria:bool):
