@@ -4,7 +4,8 @@ pygame.init()
 
 import numpy
 import cv2
-from ui import level_select, main_menu, victory_screen
+from ui import level_select, main_menu, victory_screen, defeat_screen
+from ui.timer_bar import TimerBar
 from systems.level_generator import generate_basic_level
 from systems.game_manager import check_victory
 from systems.render import draw_game
@@ -26,6 +27,9 @@ cap.set(4, altura)
 # --- Variaveis de estado ---
 estado = "menu"
 vitoria = False
+derrota = False
+fase_atual = 1
+timer = TimerBar(largura_tela=largura)
 rodando = True
 listPiece = generate_basic_level()
 selectedPiece = None
@@ -44,7 +48,7 @@ while rodando:
     # Processando mãos
     cursor, clicou, selectedPiece, img = hand_processor(
         img,
-        vitoria,
+        vitoria or derrota,
         listPiece,
         selectedPiece
     )
@@ -67,26 +71,58 @@ while rodando:
         estado, fase_num = level_select.tela_fases_pygame(tela, largura, cursor, clicou)
         # --- Escolha das Fases ---
         if fase_num == 1:
+            fase_atual = 1
             listPiece = Level1().load()
+            timer.iniciar(Level1.tempo)
+            vitoria = False
+            derrota = False
             estado = "jogando"
 
         if fase_num == 2:
+            fase_atual = 2
             listPiece = Level2().load()
+            timer.iniciar(Level2.tempo)
+            vitoria = False
+            derrota = False
             estado = "jogando"
 
     elif estado == "jogando":
         # --- Lógica de Jogo ---
         contador_encaixes = 0
-        if not vitoria:
+        if not vitoria and not derrota:
             draw_game(tela, listPiece)
+            timer.atualizar()
+            timer.desenhar(tela)
+
+            if timer.esta_esgotado():
+                derrota = True
 
             if check_victory(listPiece):
                 vitoria = True
+                timer.pausar()
 
         # --- Lógica de Vitória ---
         if vitoria:
             if victory_screen.tela_vitoria_pygame(tela, largura, cursor, clicou):
                 listPiece = generate_basic_level()
+                vitoria = False
+                estado = "fases"
+
+        # --- Lógica de Derrota (Tempo Esgotado) ---
+        if derrota:
+            acao = defeat_screen.tela_derrota_pygame(tela, largura, cursor, clicou)
+            if acao == "reiniciar":
+                if fase_atual == 1:
+                    listPiece = Level1().load()
+                    timer.iniciar(Level1.tempo)
+                elif fase_atual == 2:
+                    listPiece = Level2().load()
+                    timer.iniciar(Level2.tempo)
+                derrota = False
+                vitoria = False
+            elif acao == "fases":
+                listPiece = generate_basic_level()
+                derrota = False
                 vitoria = False
                 estado = "fases"
                 
