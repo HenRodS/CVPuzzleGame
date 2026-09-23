@@ -5,11 +5,12 @@ pygame.init()
 import numpy
 import cv2
 from ui import level_select, main_menu, victory_screen, defeat_screen
-from ui.timer_bar import TimerBar
+from ui.timer_ui import TimerUI
 from systems.level_generator import generate_basic_level
 from systems.game_manager import check_victory
 from systems.render import draw_game
 from systems.hand_controller import hand_processor
+from systems.timer_system import TimerSystem
 from levels.level_1 import Level1
 from levels.level_2 import Level2
 
@@ -29,7 +30,8 @@ estado = "menu"
 vitoria = False
 derrota = False
 fase_atual = 1
-timer = TimerBar(largura_tela=largura)
+timer = TimerSystem()
+timer_ui = TimerUI(timer)
 rodando = True
 listPiece = generate_basic_level()
 selectedPiece = None
@@ -73,7 +75,6 @@ while rodando:
         if fase_num == 1:
             fase_atual = 1
             listPiece = Level1().load()
-            timer.iniciar(Level1.tempo)
             vitoria = False
             derrota = False
             estado = "jogando"
@@ -92,7 +93,7 @@ while rodando:
         if not vitoria and not derrota:
             draw_game(tela, listPiece)
             timer.atualizar()
-            timer.desenhar(tela)
+            timer_ui.desenhar(tela)
 
             if timer.esta_esgotado():
                 derrota = True
