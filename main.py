@@ -13,6 +13,8 @@ from systems.hand_controller import hand_processor
 from systems.timer_system import TimerSystem
 from levels.level_1 import Level1
 from levels.level_2 import Level2
+from levels.level_3 import Level3
+from systems.obstacle_system import ObstacleSystem
 
 # --- COnfigurações gerais ---
 largura, altura = 1280, 720
@@ -29,9 +31,11 @@ cap.set(4, altura)
 estado = "menu"
 vitoria = False
 derrota = False
+motivo_derrota = "tempo"
 fase_atual = 1
 timer = TimerSystem()
 timer_ui = TimerUI(timer)
+obstacle_system = ObstacleSystem()
 rodando = True
 listPiece = generate_basic_level()
 selectedPiece = None
@@ -76,16 +80,31 @@ while rodando:
             fase_atual = 1
             listPiece = Level1().load()
             timer.parar()
+            obstacle_system.limpar()
             vitoria = False
             derrota = False
+            motivo_derrota = "tempo"
             estado = "jogando"
 
         if fase_num == 2:
             fase_atual = 2
             listPiece = Level2().load()
             timer.iniciar(Level2.tempo)
+            obstacle_system.limpar()
             vitoria = False
             derrota = False
+            motivo_derrota = "tempo"
+            estado = "jogando"
+
+        if fase_num == 3:
+            fase_atual = 3
+            level3 = Level3()
+            listPiece = level3.load()
+            level3.setup_obstacles(obstacle_system, largura, altura)
+            timer.iniciar(Level3.tempo)
+            vitoria = False
+            derrota = False
+            motivo_derrota = "tempo"
             estado = "jogando"
 
     elif estado == "jogando":
@@ -93,15 +112,26 @@ while rodando:
         contador_encaixes = 0
         if not vitoria and not derrota:
             draw_game(tela, listPiece)
+            obstacle_system.desenhar(tela)
             timer.atualizar()
             timer_ui.desenhar(tela)
 
+            # Verificação de colisão com os obstáculos (resulta em derrota)
+            if obstacle_system.verificar_colisao(listPiece):
+                derrota = True
+                motivo_derrota = "obstaculo"
+                selectedPiece = None
+                timer.pausar()
+
             if timer.esta_esgotado():
                 derrota = True
+                motivo_derrota = "tempo"
+                selectedPiece = None
 
             if check_victory(listPiece):
                 vitoria = True
                 timer.pausar()
+                obstacle_system.limpar()
 
         # --- Lógica de Vitória ---
         if vitoria:
@@ -109,25 +139,38 @@ while rodando:
                 listPiece = generate_basic_level()
                 vitoria = False
                 timer.parar()
+                obstacle_system.limpar()
                 estado = "fases"
 
-        # --- Lógica de Derrota (Tempo Esgotado) ---
+        # --- Lógica de Derrota (Tempo Esgotado ou Colisão) ---
         if derrota:
-            acao = defeat_screen.tela_derrota_pygame(tela, largura, cursor, clicou)
+            acao = defeat_screen.tela_derrota_pygame(tela, largura, cursor, clicou, motivo=motivo_derrota)
             if acao == "reiniciar":
                 if fase_atual == 1:
                     listPiece = Level1().load()
                     timer.parar()
+                    obstacle_system.limpar()
                 elif fase_atual == 2:
                     listPiece = Level2().load()
                     timer.iniciar(Level2.tempo)
+                    obstacle_system.limpar()
+                elif fase_atual == 3:
+                    level3 = Level3()
+                    listPiece = level3.load()
+                    level3.setup_obstacles(obstacle_system, largura, altura)
+                    timer.iniciar(Level3.tempo)
                 derrota = False
                 vitoria = False
+                motivo_derrota = "tempo"
+                selectedPiece = None
             elif acao == "fases":
                 listPiece = generate_basic_level()
                 derrota = False
                 vitoria = False
                 timer.parar()
+                obstacle_system.limpar()
+                motivo_derrota = "tempo"
+                selectedPiece = None
                 estado = "fases"
                 
 

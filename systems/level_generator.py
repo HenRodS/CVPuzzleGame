@@ -63,3 +63,50 @@ def encontrar_posicao_livre(lista_existente, w, h, range_x, range_y, tipo):
     
     # Fallback caso não ache lugar
     return [200 + len(lista_existente) * 220, 150 if tipo == "target" else 500]
+
+
+def generate_fixed_level(qtd_pecas=2, w=160, h=160):
+    """
+    Gera um nível com pontos de origem e alvos fixos e definidos (não-aleatórios).
+    Objetos são gerados no lado esquerdo da tela e devem ser levados até os alvos no lado direito,
+    percorrendo a tela e desviando de possíveis barreiras centrais.
+    """
+    PuzzlePiece_list = []
+
+    base_path = "assets"
+    pasta_origem = os.path.join(base_path, "imagesPNG")
+    pasta_alvo = os.path.join(base_path, "imagesTarget")
+
+    if not os.path.exists(pasta_origem):
+        print(f"Erro: Pasta {pasta_origem} não encontrada!")
+        return []
+
+    # Lista ordenada para manter a seleção previsível e consistente (não-aleatória)
+    files = sorted([f for f in os.listdir(pasta_origem) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
+
+    if not files:
+        print("Erro: Nenhuma imagem encontrada para o nível!")
+        return []
+
+    # Posições pré-definidas: Origem à esquerda, Alvo à direita
+    posicoes_definidas = [
+        {"origem": [120, 130], "alvo": [980, 130]},
+        {"origem": [120, 430], "alvo": [980, 430]},
+        {"origem": [120, 280], "alvo": [980, 280]},
+        {"origem": [120, 20],  "alvo": [980, 20]}
+    ]
+
+    total_pecas = min(qtd_pecas, len(files), len(posicoes_definidas))
+
+    for i in range(total_pecas):
+        nome = files[i]
+        caminho = os.path.join(pasta_origem, nome)
+        caminhoTarget = os.path.join(pasta_alvo, nome)
+
+        pos_origin = list(posicoes_definidas[i]["origem"])
+        pos_target = list(posicoes_definidas[i]["alvo"])
+
+        piece_object = PuzzlePiece(caminho, caminhoTarget, pos_origin, pos_target, width=w, height=h)
+        PuzzlePiece_list.append(piece_object)
+
+    return PuzzlePiece_list
