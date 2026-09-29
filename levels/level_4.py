@@ -2,7 +2,7 @@ import pygame
 import math
 from systems.level_generator import generate_fixed_level
 
-class Level3:
+class Level4:
     tempo = 60
 
     def __init__(self, largura=1280, altura=720):
@@ -10,20 +10,26 @@ class Level3:
         self.altura = altura
         self.fonte = pygame.font.SysFont("Arial", 16, bold=True)
 
-        # Gera a área de obstáculo no meio da tela (barreira central vertical)
-        # Deixa passagens livres no topo e na parte inferior
+        # Gera os obstáculos no topo e na parte de baixo da tela (barreiras verticais),
+        # deixando uma abertura no meio para o jogador guiar as peças entre os lados.
         espessura = 44
-        abertura_superior = 230
-        abertura_inferior = 230
         centro_x = (largura - espessura) // 2
-        topo_y = abertura_superior
-        altura_barreira = max(50, altura - abertura_superior - abertura_inferior)
 
-        self.area_obstaculo = pygame.Rect(centro_x, topo_y, espessura, altura_barreira)
-        self.obstaculos = [self.area_obstaculo]
+        # Corredor central com 260px de altura (peças têm 160px)
+        corredor_altura = 260
+        y_abertura_inicio = (altura - corredor_altura) // 2   # 230
+        y_abertura_fim = y_abertura_inicio + corredor_altura # 490
+
+        # 1. Obstáculo no topo da tela (y: 0 até 230)
+        self.area_topo = pygame.Rect(centro_x, 0, espessura, y_abertura_inicio)
+
+        # 2. Obstáculo na parte de baixo da tela (y: 490 até 720)
+        self.area_baixo = pygame.Rect(centro_x, y_abertura_fim, espessura, altura - y_abertura_fim)
+
+        self.obstaculos = [self.area_topo, self.area_baixo]
 
     def load(self):
-        print("ping 3")
+        print("ping 4")
         return generate_fixed_level(qtd_pecas=2)
 
     def setup_obstacles(self, obstacle_system):
@@ -77,6 +83,6 @@ class Level3:
             tela.blit(txt_surf_rot, txt_surf_rot.get_rect(center=(c_x, c_y)))
 
     def desenhar_obstaculos(self, tela):
-        """Renderiza os obstáculos da Fase 3 na tela."""
+        """Renderiza os obstáculos da Fase 4 na tela (topo e base)."""
         for area in self.obstaculos:
             self._desenhar_area_perigo(tela, area, texto="PERIGO")

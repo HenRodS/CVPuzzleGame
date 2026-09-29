@@ -23,8 +23,8 @@ def tela_derrota_pygame(tela, largura_tela, cursor, click, motivo="tempo"):
     fonte_sub = pygame.font.SysFont("Arial", 24)
 
     if motivo == "obstaculo":
-        msg_titulo = fonte_titulo.render("COLISÃO COM BARREIRA!", True, (255, 60, 60))
-        msg_sub = fonte_sub.render("Uma peça colidiu com o obstáculo! Guie as peças pelos cantos.", True, (220, 220, 220))
+        msg_titulo = fonte_titulo.render("COLISÃO COM OBSTÁCULO!", True, (255, 60, 60))
+        msg_sub = fonte_sub.render("Uma peça encostou na área de perigo! Encontre o caminho livre.", True, (220, 220, 220))
     else:
         msg_titulo = fonte_titulo.render("TEMPO ESGOTADO!", True, (255, 60, 60))
         msg_sub = fonte_sub.render("A fase falhou! Você não conseguiu encaixar as peças a tempo.", True, (220, 220, 220))

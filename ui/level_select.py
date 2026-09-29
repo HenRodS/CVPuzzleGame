@@ -1,33 +1,38 @@
 import pygame
 from ui.button import Button
 
-# Instancia os botoes de fase (melhorar isso)
-btn_fase1 = Button("FASE 1", (200, 250), (200, 60))
-btn_fase2 = Button("FASE 2", (450, 250), (200, 60))
-btn_fase3 = Button("FASE 3", (700, 250), (200, 60))
-btn_voltar = Button("VOLTAR", (540, 600), (200, 60), cor_base=(100, 100, 100))
+# Instancia os botões das fases e botão voltar
+btn_fase1 = Button("FASE 1", (220, 260), (180, 60))
+btn_fase2 = Button("FASE 2", (440, 260), (180, 60))
+btn_fase3 = Button("FASE 3", (660, 260), (180, 60))
+btn_fase4 = Button("FASE 4", (880, 260), (180, 60))
+btn_voltar = Button("VOLTAR", (540, 520), (200, 60), cor_base=(100, 100, 100))
 
 def tela_fases_pygame(tela, largura_tela, cursor, click):
-    # titulo centralizado
-    # Explicação: Faz a superficie do titulo (titulo_surf) e "coloca" ela encima da moldura correta (titulo_rect)
-    fonte_titulo = pygame.font.SysFont("Arial", 64, bold=True)
-    titulo_surf = fonte_titulo.render("MENU PRINCIPAL", True, (255,255,0))
-
+    fonte_titulo = pygame.font.SysFont("Arial", 56, bold=True)
+    titulo_surf = fonte_titulo.render("SELEÇÃO DE FASES", True, (255, 255, 0))
     titulo_rect = titulo_surf.get_rect(center=(largura_tela // 2, 100))
-    tela.blit(titulo_surf, titulo_rect) # blit é a funcao que "carimba" uma superficie numa posicao especifica
-    
+    tela.blit(titulo_surf, titulo_rect)
 
-    # Renderiza os botoes
+    fonte_sub = pygame.font.SysFont("Arial", 22)
+    sub_surf = fonte_sub.render("Escolha uma fase para iniciar o desafio", True, (220, 220, 220))
+    sub_rect = sub_surf.get_rect(center=(largura_tela // 2, 160))
+    tela.blit(sub_surf, sub_rect)
+
+    # Renderiza os botões
     if btn_fase1.desenhar(tela, cursor) and click:
-        return "jogando", 1 # indica o numero de peças
-    
+        return "jogando", 1
+
     if btn_fase2.desenhar(tela, cursor) and click:
         return "jogando", 2
-    
+
     if btn_fase3.desenhar(tela, cursor) and click:
         return "jogando", 3
 
+    if btn_fase4.desenhar(tela, cursor) and click:
+        return "jogando", 4
+
     if btn_voltar.desenhar(tela, cursor) and click:
         return "menu", None
-    
-    return "fases", None
+
+    return "fases", None

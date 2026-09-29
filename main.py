@@ -14,6 +14,7 @@ from systems.timer_system import TimerSystem
 from levels.level_1 import Level1
 from levels.level_2 import Level2
 from levels.level_3 import Level3
+from levels.level_4 import Level4
 from systems.obstacle_system import ObstacleSystem
 
 # --- COnfigurações gerais ---
@@ -33,6 +34,7 @@ vitoria = False
 derrota = False
 motivo_derrota = "tempo"
 fase_atual = 1
+nivel_ativo = None
 timer = TimerSystem()
 timer_ui = TimerUI(timer)
 obstacle_system = ObstacleSystem()
@@ -78,30 +80,43 @@ while rodando:
         # --- Escolha das Fases ---
         if fase_num == 1:
             fase_atual = 1
-            listPiece = Level1().load()
+            nivel_ativo = Level1()
+            listPiece = nivel_ativo.load()
+            nivel_ativo.setup_obstacles(obstacle_system)
             timer.parar()
-            obstacle_system.limpar()
             vitoria = False
             derrota = False
             motivo_derrota = "tempo"
             estado = "jogando"
 
-        if fase_num == 2:
+        elif fase_num == 2:
             fase_atual = 2
-            listPiece = Level2().load()
+            nivel_ativo = Level2()
+            listPiece = nivel_ativo.load()
+            nivel_ativo.setup_obstacles(obstacle_system)
             timer.iniciar(Level2.tempo)
-            obstacle_system.limpar()
             vitoria = False
             derrota = False
             motivo_derrota = "tempo"
             estado = "jogando"
 
-        if fase_num == 3:
+        elif fase_num == 3:
             fase_atual = 3
-            level3 = Level3()
-            listPiece = level3.load()
-            level3.setup_obstacles(obstacle_system, largura, altura)
+            nivel_ativo = Level3(largura, altura)
+            listPiece = nivel_ativo.load()
+            nivel_ativo.setup_obstacles(obstacle_system)
             timer.iniciar(Level3.tempo)
+            vitoria = False
+            derrota = False
+            motivo_derrota = "tempo"
+            estado = "jogando"
+
+        elif fase_num == 4:
+            fase_atual = 4
+            nivel_ativo = Level4(largura, altura)
+            listPiece = nivel_ativo.load()
+            nivel_ativo.setup_obstacles(obstacle_system)
+            timer.iniciar(Level4.tempo)
             vitoria = False
             derrota = False
             motivo_derrota = "tempo"
@@ -112,7 +127,10 @@ while rodando:
         contador_encaixes = 0
         if not vitoria and not derrota:
             draw_game(tela, listPiece)
-            obstacle_system.desenhar(tela)
+            # Desenha os obstáculos diretamente do arquivo do level ativo
+            if nivel_ativo and hasattr(nivel_ativo, "desenhar_obstaculos"):
+                nivel_ativo.desenhar_obstaculos(tela)
+
             timer.atualizar()
             timer_ui.desenhar(tela)
 
@@ -140,6 +158,7 @@ while rodando:
                 vitoria = False
                 timer.parar()
                 obstacle_system.limpar()
+                nivel_ativo = None
                 estado = "fases"
 
         # --- Lógica de Derrota (Tempo Esgotado ou Colisão) ---
@@ -147,18 +166,25 @@ while rodando:
             acao = defeat_screen.tela_derrota_pygame(tela, largura, cursor, clicou, motivo=motivo_derrota)
             if acao == "reiniciar":
                 if fase_atual == 1:
-                    listPiece = Level1().load()
+                    nivel_ativo = Level1()
+                    listPiece = nivel_ativo.load()
+                    nivel_ativo.setup_obstacles(obstacle_system)
                     timer.parar()
-                    obstacle_system.limpar()
                 elif fase_atual == 2:
-                    listPiece = Level2().load()
+                    nivel_ativo = Level2()
+                    listPiece = nivel_ativo.load()
+                    nivel_ativo.setup_obstacles(obstacle_system)
                     timer.iniciar(Level2.tempo)
-                    obstacle_system.limpar()
                 elif fase_atual == 3:
-                    level3 = Level3()
-                    listPiece = level3.load()
-                    level3.setup_obstacles(obstacle_system, largura, altura)
+                    nivel_ativo = Level3(largura, altura)
+                    listPiece = nivel_ativo.load()
+                    nivel_ativo.setup_obstacles(obstacle_system)
                     timer.iniciar(Level3.tempo)
+                elif fase_atual == 4:
+                    nivel_ativo = Level4(largura, altura)
+                    listPiece = nivel_ativo.load()
+                    nivel_ativo.setup_obstacles(obstacle_system)
+                    timer.iniciar(Level4.tempo)
                 derrota = False
                 vitoria = False
                 motivo_derrota = "tempo"
@@ -169,6 +195,7 @@ while rodando:
                 vitoria = False
                 timer.parar()
                 obstacle_system.limpar()
+                nivel_ativo = None
                 motivo_derrota = "tempo"
                 selectedPiece = None
                 estado = "fases"
