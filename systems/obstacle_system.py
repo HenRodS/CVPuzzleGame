@@ -17,7 +17,7 @@ class ObstacleSystem:
 
     def definir_areas(self, areas):
         """Define a lista de áreas (pygame.Rect ou tuplas) que causam derrota ao toque."""
-        self.areas = [pygame.Rect(a) for a in areas]
+        self.areas = [a if isinstance(a, pygame.Rect) else pygame.Rect(a) for a in areas]
         self.ativo = len(self.areas) > 0
 
     def adicionar_area(self, rect_ou_coords):

@@ -16,6 +16,7 @@ from levels.level_2 import Level2
 from levels.level_3 import Level3
 from levels.level_4 import Level4
 from levels.level_5 import Level5
+from levels.level_6 import Level6
 from systems.obstacle_system import ObstacleSystem
 
 # --- COnfigurações gerais ---
@@ -134,6 +135,17 @@ while rodando:
             motivo_derrota = "tempo"
             estado = "jogando"
 
+        elif fase_num == 6:
+            fase_atual = 6
+            nivel_ativo = Level6(largura, altura)
+            listPiece = nivel_ativo.load()
+            nivel_ativo.setup_obstacles(obstacle_system)
+            timer.iniciar(Level6.tempo)
+            vitoria = False
+            derrota = False
+            motivo_derrota = "tempo"
+            estado = "jogando"
+
     elif estado == "jogando":
         # --- Lógica de Jogo ---
         contador_encaixes = 0
@@ -202,6 +214,11 @@ while rodando:
                     listPiece = nivel_ativo.load()
                     nivel_ativo.setup_obstacles(obstacle_system)
                     timer.iniciar(Level5.tempo)
+                elif fase_atual == 6:
+                    nivel_ativo = Level6(largura, altura)
+                    listPiece = nivel_ativo.load()
+                    nivel_ativo.setup_obstacles(obstacle_system)
+                    timer.iniciar(Level6.tempo)
                 derrota = False
                 vitoria = False
                 motivo_derrota = "tempo"
