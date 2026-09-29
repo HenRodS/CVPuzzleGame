@@ -2,10 +2,11 @@ import pygame
 from ui.button import Button
 
 # Instancia os botões das fases e botão voltar
-btn_fase1 = Button("FASE 1", (220, 260), (180, 60))
-btn_fase2 = Button("FASE 2", (440, 260), (180, 60))
-btn_fase3 = Button("FASE 3", (660, 260), (180, 60))
-btn_fase4 = Button("FASE 4", (880, 260), (180, 60))
+btn_fase1 = Button("FASE 1", (170, 270), (160, 60))
+btn_fase2 = Button("FASE 2", (365, 270), (160, 60))
+btn_fase3 = Button("FASE 3", (560, 270), (160, 60))
+btn_fase4 = Button("FASE 4", (755, 270), (160, 60))
+btn_fase5 = Button("FASE 5", (950, 270), (160, 60))
 btn_voltar = Button("VOLTAR", (540, 520), (200, 60), cor_base=(100, 100, 100))
 
 def tela_fases_pygame(tela, largura_tela, cursor, click):
@@ -31,6 +32,9 @@ def tela_fases_pygame(tela, largura_tela, cursor, click):
 
     if btn_fase4.desenhar(tela, cursor) and click:
         return "jogando", 4
+
+    if btn_fase5.desenhar(tela, cursor) and click:
+        return "jogando", 5
 
     if btn_voltar.desenhar(tela, cursor) and click:
         return "menu", None
