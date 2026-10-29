@@ -4,11 +4,13 @@ from systems.level_generator import generate_fixed_level
 
 class Level7:
     tempo = 60
+    usa_maos = True  # Flag: Fase utiliza diferenciacao de Mao Esquerda e Direita
 
     def __init__(self, largura=1280, altura=720):
         self.largura = largura
         self.altura = altura
         self.fonte_aviso = pygame.font.SysFont("Arial", 18, bold=True)
+        self.tempo_inicio = None
 
         # Barreira central no meio da tela (deixa passagens livres no topo e na base)
         espessura = 44
@@ -21,6 +23,7 @@ class Level7:
 
     def load(self):
         print("ping 7")
+        self.tempo_inicio = pygame.time.get_ticks()
         pieces = generate_fixed_level(qtd_pecas=2, w=150, h=150)
         if len(pieces) >= 2:
             # 1. Peça superior com BORDA VERMELHA (apenas MÃO ESQUERDA)
@@ -66,28 +69,36 @@ class Level7:
         pygame.draw.rect(tela, (255, 90, 90), rect, width=3, border_radius=10)
 
     def _desenhar_painel_instrucao(self, tela):
-        """Exibe um banner superior instruindo o jogador sobre as mãos requeridas."""
-        # Fundo do banner no topo central
-        banner_w, banner_h = 560, 36
+        """Exibe um banner inferior instruindo o jogador sobre as mãos requeridas (some após 10s)."""
+        if self.tempo_inicio is None:
+            self.tempo_inicio = pygame.time.get_ticks()
+
+        # Some após 10 segundos
+        tempo_passado = (pygame.time.get_ticks() - self.tempo_inicio) / 1000.0
+        if tempo_passado >= 10.0:
+            return
+
+        # Fundo do banner na parte de baixo no centro da tela, próximo da borda
+        banner_w, banner_h = 580, 40
         banner_x = (self.largura - banner_w) // 2
-        banner_y = 10
+        banner_y = self.altura - banner_h - 15
 
         s = pygame.Surface((banner_w, banner_h), pygame.SRCALPHA)
-        s.fill((0, 0, 0, 180))
+        s.fill((0, 0, 0, 190))
         tela.blit(s, (banner_x, banner_y))
-        pygame.draw.rect(tela, (100, 100, 100), (banner_x, banner_y, banner_w, banner_h), width=1, border_radius=8)
+        pygame.draw.rect(tela, (120, 120, 120), (banner_x, banner_y, banner_w, banner_h), width=1, border_radius=8)
 
         # Texto Vermelho: Mão Esquerda
         txt_esq = self.fonte_aviso.render("MÃO ESQUERDA: PEÇA VERMELHA", True, (255, 70, 70))
-        tela.blit(txt_esq, (banner_x + 16, banner_y + 8))
+        tela.blit(txt_esq, (banner_x + 18, banner_y + 10))
 
         # Divisor
         txt_div = self.fonte_aviso.render("|", True, (180, 180, 180))
-        tela.blit(txt_div, (banner_x + 295, banner_y + 8))
+        tela.blit(txt_div, (banner_x + 305, banner_y + 10))
 
         # Texto Azul: Mão Direita
         txt_dir = self.fonte_aviso.render("MÃO DIREITA: PEÇA AZUL", True, (70, 160, 255))
-        tela.blit(txt_dir, (banner_x + 315, banner_y + 8))
+        tela.blit(txt_dir, (banner_x + 325, banner_y + 10))
 
     def desenhar_obstaculos(self, tela):
         """Renderiza os obstáculos e a barra de instrução da Fase 7."""

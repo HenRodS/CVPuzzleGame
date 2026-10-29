@@ -5,7 +5,7 @@ import cv2
 # maxHands=2 permite rastrear simultaneamente as mãos esquerda e direita
 detector = HandDetector(detectionCon=0.65, maxHands=2)
 
-def hand_processor(img, vitoria, listPiece, selectedPiece):
+def hand_processor(img, vitoria, listPiece, selectedPiece, usa_maos=False):
     # flipType=True garante que 'Right' corresponda à mão direita física e 'Left' à mão esquerda na imagem espelhada
     hands, img = detector.findHands(img, flipType=True)
 
@@ -38,12 +38,32 @@ def hand_processor(img, vitoria, listPiece, selectedPiece):
                 clicou = True
                 cursor = h_cursor
 
-            # Indicador visual no feed da câmera para feedback imediato do usuário
-            # BGR: Vermelho (0, 0, 255) para Mão Esquerda, Azul (255, 120, 0) para Mão Direita
-            cor_mao = (0, 0, 255) if hand_type == "Left" else (255, 120, 0)
-            nome_mao = "ESQ" if hand_type == "Left" else "DIR"
-            cv2.circle(img, (h_cursor[0], h_cursor[1]), 10, cor_mao, -1 if hand_clicou else 2)
-            cv2.putText(img, nome_mao, (h_cursor[0] - 16, h_cursor[1] - 18), cv2.FONT_HERSHEY_SIMPLEX, 0.5, cor_mao, 2)
+            # Feedback visual das mãos no feed da câmera
+            if usa_maos:
+                # Flag TRUE: Ao invés de círculo no dedo com ESQ/DIR, a bounding box da mão
+                # é colorida em vermelho para Mão Esquerda e azul para Mão Direita.
+                # OpenCV usa formato BGR: Vermelho = (0, 0, 255), Azul = (255, 0, 0)
+                cor_bbox = (0, 0, 255) if hand_type == "Left" else (255, 0, 0)
+                nome_mao = "ESQUERDA" if hand_type == "Left" else "DIREITA"
+
+                if 'bbox' in hand:
+                    x, y, w, h = hand['bbox']
+                    x1 = max(0, x - 20)
+                    y1 = max(0, y - 20)
+                    x2 = min(img.shape[1], x + w + 20)
+                    y2 = min(img.shape[0], y + h + 20)
+
+                    # Bounding box colorida (mais espessa ao clicar)
+                    espessura = 4 if hand_clicou else 2
+                    cv2.rectangle(img, (x1, y1), (x2, y2), cor_bbox, espessura)
+
+                    # Tag com o nome da mão no topo da bounding box
+                    tab_w = 95
+                    tab_h = 24
+                    tab_y1 = max(0, y1 - tab_h)
+                    cv2.rectangle(img, (x1, tab_y1), (x1 + tab_w, y1), cor_bbox, -1)
+                    cv2.putText(img, nome_mao, (x1 + 6, y1 - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2)
+            # Se usa_maos for False: design padrão da mão, sem nenhum indicador de direita/esquerda
 
             # Lógica de seleção e arraste de peças durante o jogo
             if not vitoria:
@@ -83,4 +103,4 @@ def hand_processor(img, vitoria, listPiece, selectedPiece):
     # Atualiza selectedPiece para manter compatibilidade com main.py
     selectedPiece = next((p for p in listPiece if getattr(p, 'dragged_by', None) is not None), None)
 
-    return cursor, clicou, selectedPiece, img
+    return cursor, clicou, selectedPiece, img

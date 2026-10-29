@@ -5,12 +5,14 @@ from objects.puzzle_piece import PuzzlePiece
 
 class Level8:
     tempo = 75
+    usa_maos = True  # Flag: Fase utiliza diferenciacao de Mao Esquerda e Direita
 
     def __init__(self, largura=1280, altura=720):
         self.largura = largura
         self.altura = altura
         self.fonte_status = pygame.font.SysFont("Arial", 16, bold=True)
         self.fonte_item = pygame.font.SysFont("Arial", 13, bold=True)
+        self.tempo_inicio = None
 
         self.obstacle_system = None
         self.barreira_ativa = True
@@ -36,6 +38,7 @@ class Level8:
 
     def load(self):
         print("ping 8")
+        self.tempo_inicio = pygame.time.get_ticks()
         base_path = "assets"
         pasta_origem = os.path.join(base_path, "imagesPNG")
         pasta_alvo = os.path.join(base_path, "imagesTarget")
@@ -87,12 +90,12 @@ class Level8:
         self.peca_azul.target_badge_text = "ENCAIXE AZUL"
 
         # 3. Peça Neutra (Ambas as Mãos - Mão Esquerda ou Direita)
-        # Centro inferior: peça neutra (origem [565, 540])
+        # Centro inferior: peça neutra (origem [565, 490])
         # Centro superior: encaixe neutro (alvo [565, 85], cercado por barreiras)
         self.peca_neutra = PuzzlePiece(
             os.path.join(pasta_origem, f_neutra),
             os.path.join(pasta_alvo, f_neutra),
-            posOrigin=[565, 540],
+            posOrigin=[565, 490],
             posTarget=[565, 85],
             width=w, height=h,
             required_hand=None,
@@ -139,10 +142,19 @@ class Level8:
         pygame.draw.rect(tela, (255, 90, 90), rect, width=3, border_radius=8)
 
     def _desenhar_painel_instrucao(self, tela):
-        """Exibe o status das peças e aviso sobre as barreiras."""
-        banner_w, banner_h = 680, 52
+        """Exibe o status das peças e aviso sobre as barreiras (some após 10s)."""
+        if self.tempo_inicio is None:
+            self.tempo_inicio = pygame.time.get_ticks()
+
+        # Some após 10 segundos
+        tempo_passado = (pygame.time.get_ticks() - self.tempo_inicio) / 1000.0
+        if tempo_passado >= 10.0:
+            return
+
+        # Fundo do banner na parte de baixo no centro da tela, próximo da borda
+        banner_w, banner_h = 680, 48
         banner_x = (self.largura - banner_w) // 2
-        banner_y = 278
+        banner_y = self.altura - banner_h - 15
 
         s = pygame.Surface((banner_w, banner_h), pygame.SRCALPHA)
         s.fill((0, 0, 0, 195))
@@ -154,35 +166,35 @@ class Level8:
             pygame.draw.rect(tela, cor_borda, (banner_x, banner_y, banner_w, banner_h), width=2, border_radius=8)
 
             txt_titulo = self.fonte_status.render("BARREIRA ATIVA: ENCAIXE AS PEÇAS VERMELHA E AZUL", True, (255, 210, 80))
-            tela.blit(txt_titulo, (banner_x + (banner_w - txt_titulo.get_width()) // 2, banner_y + 6))
+            tela.blit(txt_titulo, (banner_x + (banner_w - txt_titulo.get_width()) // 2, banner_y + 4))
 
             # Status Peça Vermelha
             v_ok = self.peca_vermelha.isMatched if self.peca_vermelha else False
             cor_v = (70, 240, 100) if v_ok else (255, 90, 90)
             txt_v = "[OK] VERMELHA" if v_ok else "[X] VERMELHA (MÃO ESQ)"
             surf_v = self.fonte_item.render(txt_v, True, cor_v)
-            tela.blit(surf_v, (banner_x + 80, banner_y + 30))
+            tela.blit(surf_v, (banner_x + 80, banner_y + 26))
 
             # Divisor
             txt_div = self.fonte_item.render("|", True, (150, 150, 150))
-            tela.blit(txt_div, (banner_x + 335, banner_y + 30))
+            tela.blit(txt_div, (banner_x + 335, banner_y + 26))
 
             # Status Peça Azul
             a_ok = self.peca_azul.isMatched if self.peca_azul else False
             cor_a = (70, 240, 100) if a_ok else (70, 160, 255)
             txt_a = "[OK] AZUL" if a_ok else "[X] AZUL (MÃO DIR)"
             surf_a = self.fonte_item.render(txt_a, True, cor_a)
-            tela.blit(surf_a, (banner_x + 390, banner_y + 30))
+            tela.blit(surf_a, (banner_x + 390, banner_y + 26))
         else:
             # Barreira aberta / desbloqueada
             cor_borda = (50, 220, 120)
             pygame.draw.rect(tela, cor_borda, (banner_x, banner_y, banner_w, banner_h), width=2, border_radius=8)
 
             txt_liberada = self.fonte_status.render("BARREIRA DESATIVADA! ENCAIXE A PEÇA NEUTRA", True, (80, 255, 140))
-            tela.blit(txt_liberada, (banner_x + (banner_w - txt_liberada.get_width()) // 2, banner_y + 8))
+            tela.blit(txt_liberada, (banner_x + (banner_w - txt_liberada.get_width()) // 2, banner_y + 6))
 
             txt_sub = self.fonte_item.render("A peça neutra pode ser movida com qualquer mão (Esq ou Dir)", True, (230, 230, 230))
-            tela.blit(txt_sub, (banner_x + (banner_w - txt_sub.get_width()) // 2, banner_y + 30))
+            tela.blit(txt_sub, (banner_x + (banner_w - txt_sub.get_width()) // 2, banner_y + 26))
 
     def desenhar_obstaculos(self, tela):
         """Atualiza estado das barreiras e desenha na tela."""

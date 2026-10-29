@@ -57,12 +57,16 @@ while rodando:
     if not success: break
     img = cv2.flip(img, 1)
 
+    # Flag indicando se a fase ativa utiliza diferenciacao entre Direita e Esquerda
+    usa_maos = getattr(nivel_ativo, "usa_maos", False) if estado == "jogando" else False
+
     # Processando mãos
     cursor, clicou, selectedPiece, img = hand_processor(
         img,
         vitoria or derrota,
         listPiece,
-        selectedPiece
+        selectedPiece,
+        usa_maos=usa_maos
     )
 
     # Conversão OpenCV (BGR) -> Pygame (RGB)

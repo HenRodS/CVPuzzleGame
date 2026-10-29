@@ -2,6 +2,7 @@ from systems.level_generator import generate_basic_level
 
 class Level2:
     tempo = 45
+    usa_maos = False  # Flag: Fase nao utiliza diferenciacao de Mao Esquerda e Direita
 
     def load(self):
         print("ping 2")
@@ -11,4 +12,4 @@ class Level2:
         obstacle_system.limpar()
 
     def desenhar_obstaculos(self, tela):
-        pass
+        pass

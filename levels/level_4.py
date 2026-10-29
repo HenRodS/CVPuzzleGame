@@ -4,6 +4,7 @@ from systems.level_generator import generate_fixed_level
 
 class Level4:
     tempo = 60
+    usa_maos = False  # Flag: Fase nao utiliza diferenciacao de Mao Esquerda e Direita
 
     def __init__(self, largura=1280, altura=720):
         self.largura = largura

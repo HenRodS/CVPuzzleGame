@@ -2,6 +2,7 @@ from systems.level_generator import generate_basic_level
 
 class Level1:
     tempo = 30
+    usa_maos = False  # Flag: Fase nao utiliza diferenciacao de Mao Esquerda e Direita
 
     def load(self):
         print("ping 1")
