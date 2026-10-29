@@ -97,8 +97,6 @@ class Level8:
             required_hand=None,
             border_color=(245, 200, 35)
         )
-        self.peca_neutra.badge_text = "AMBAS AS MÃOS"
-        self.peca_neutra.target_badge_text = None
 
         self.pecas = [self.peca_vermelha, self.peca_azul, self.peca_neutra]
         return self.pecas
