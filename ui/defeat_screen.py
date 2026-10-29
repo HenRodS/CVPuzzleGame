@@ -32,11 +32,11 @@ def tela_derrota_pygame(tela, largura_tela, cursor, click, motivo="tempo"):
     tela.blit(msg_titulo, (largura_tela // 2 - msg_titulo.get_width() // 2, 240))
     tela.blit(msg_sub, (largura_tela // 2 - msg_sub.get_width() // 2, 320))
 
-    # Botões interativos
-    if btn_tentar.desenhar(tela, cursor) and click:
+    # Botões interativos (só ativam ao clicar encima do botão)
+    if btn_tentar.desenhar(tela, cursor, click):
         return "reiniciar"
 
-    if btn_fases.desenhar(tela, cursor) and click:
+    if btn_fases.desenhar(tela, cursor, click):
         return "fases"
 
     return None

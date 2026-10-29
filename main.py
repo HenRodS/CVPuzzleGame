@@ -45,6 +45,7 @@ obstacle_system = ObstacleSystem()
 rodando = True
 listPiece = generate_basic_level()
 selectedPiece = None
+ultimo_clicou = False
 
 while rodando:
     # Eventos Pygame
@@ -69,6 +70,10 @@ while rodando:
         usa_maos=usa_maos
     )
 
+    # Detecta clique recem-iniciado (apenas no exato frame em que o gesto de pinca comeca)
+    click_down = clicou and not ultimo_clicou
+    ultimo_clicou = clicou
+
     # Conversão OpenCV (BGR) -> Pygame (RGB)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img_pygame = pygame.surfarray.make_surface(numpy.transpose(img_rgb, (1,0,2)))
@@ -79,12 +84,12 @@ while rodando:
     # Máquina de Estados
     if estado == "menu":
         # chama a tela principal e atualiza o estado conforme a escolha
-        estado = main_menu.tela_menu_pygame(tela, largura, cursor, clicou)
+        estado = main_menu.tela_menu_pygame(tela, largura, cursor, click_down)
         if estado == "sair":
             break
 
     elif estado == "fases":
-        estado, fase_num = level_select.tela_fases_pygame(tela, largura, cursor, clicou)
+        estado, fase_num = level_select.tela_fases_pygame(tela, largura, cursor, click_down)
         # --- Escolha das Fases ---
         if fase_num == 1:
             fase_atual = 1
@@ -205,7 +210,7 @@ while rodando:
 
         # --- Lógica de Vitória ---
         if vitoria:
-            if victory_screen.tela_vitoria_pygame(tela, largura, cursor, clicou):
+            if victory_screen.tela_vitoria_pygame(tela, largura, cursor, click_down):
                 listPiece = generate_basic_level()
                 vitoria = False
                 timer.parar()
@@ -215,7 +220,7 @@ while rodando:
 
         # --- Lógica de Derrota (Tempo Esgotado ou Colisão) ---
         if derrota:
-            acao = defeat_screen.tela_derrota_pygame(tela, largura, cursor, clicou, motivo=motivo_derrota)
+            acao = defeat_screen.tela_derrota_pygame(tela, largura, cursor, click_down, motivo=motivo_derrota)
             if acao == "reiniciar":
                 if fase_atual == 1:
                     nivel_ativo = Level1()

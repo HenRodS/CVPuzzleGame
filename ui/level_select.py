@@ -23,32 +23,32 @@ def tela_fases_pygame(tela, largura_tela, cursor, click):
     sub_rect = sub_surf.get_rect(center=(largura_tela // 2, 150))
     tela.blit(sub_surf, sub_rect)
 
-    # Renderiza os botões
-    if btn_fase1.desenhar(tela, cursor) and click:
+    # Renderiza os botões (só ativa se clicar encima do botão)
+    if btn_fase1.desenhar(tela, cursor, click):
         return "jogando", 1
 
-    if btn_fase2.desenhar(tela, cursor) and click:
+    if btn_fase2.desenhar(tela, cursor, click):
         return "jogando", 2
 
-    if btn_fase3.desenhar(tela, cursor) and click:
+    if btn_fase3.desenhar(tela, cursor, click):
         return "jogando", 3
 
-    if btn_fase4.desenhar(tela, cursor) and click:
+    if btn_fase4.desenhar(tela, cursor, click):
         return "jogando", 4
 
-    if btn_fase5.desenhar(tela, cursor) and click:
+    if btn_fase5.desenhar(tela, cursor, click):
         return "jogando", 5
 
-    if btn_fase6.desenhar(tela, cursor) and click:
+    if btn_fase6.desenhar(tela, cursor, click):
         return "jogando", 6
 
-    if btn_fase7.desenhar(tela, cursor) and click:
+    if btn_fase7.desenhar(tela, cursor, click):
         return "jogando", 7
 
-    if btn_fase8.desenhar(tela, cursor) and click:
+    if btn_fase8.desenhar(tela, cursor, click):
         return "jogando", 8
 
-    if btn_voltar.desenhar(tela, cursor) and click:
+    if btn_voltar.desenhar(tela, cursor, click):
         return "menu", None
 
     return "fases", None
