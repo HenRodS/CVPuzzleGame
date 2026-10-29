@@ -44,7 +44,6 @@ def hand_processor(img, vitoria, listPiece, selectedPiece, usa_maos=False):
                 # é colorida em vermelho para Mão Esquerda e azul para Mão Direita.
                 # OpenCV usa formato BGR: Vermelho = (0, 0, 255), Azul = (255, 0, 0)
                 cor_bbox = (0, 0, 255) if hand_type == "Left" else (255, 0, 0)
-                nome_mao = "ESQUERDA" if hand_type == "Left" else "DIREITA"
 
                 if 'bbox' in hand:
                     x, y, w, h = hand['bbox']
@@ -57,12 +56,6 @@ def hand_processor(img, vitoria, listPiece, selectedPiece, usa_maos=False):
                     espessura = 4 if hand_clicou else 2
                     cv2.rectangle(img, (x1, y1), (x2, y2), cor_bbox, espessura)
 
-                    # Tag com o nome da mão no topo da bounding box
-                    tab_w = 95
-                    tab_h = 24
-                    tab_y1 = max(0, y1 - tab_h)
-                    cv2.rectangle(img, (x1, tab_y1), (x1 + tab_w, y1), cor_bbox, -1)
-                    cv2.putText(img, nome_mao, (x1 + 6, y1 - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2)
             # Se usa_maos for False: design padrão da mão, sem nenhum indicador de direita/esquerda
 
             # Lógica de seleção e arraste de peças durante o jogo

@@ -71,8 +71,6 @@ class Level8:
             required_hand="Left",
             border_color=(240, 45, 45)
         )
-        self.peca_vermelha.badge_text = "MÃO ESQUERDA"
-        self.peca_vermelha.target_badge_text = "ENCAIXE VERMELHO"
 
         # 2. Peça Azul (Mão Direita)
         # Lado direito: peça azul (origem [1020, 150])
@@ -86,8 +84,6 @@ class Level8:
             required_hand="Right",
             border_color=(35, 135, 255)
         )
-        self.peca_azul.badge_text = "MÃO DIREITA"
-        self.peca_azul.target_badge_text = "ENCAIXE AZUL"
 
         # 3. Peça Neutra (Ambas as Mãos - Mão Esquerda ou Direita)
         # Centro inferior: peça neutra (origem [565, 490])
